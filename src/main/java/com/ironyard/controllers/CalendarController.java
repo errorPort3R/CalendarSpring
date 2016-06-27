@@ -11,6 +11,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 
+import javax.annotation.PostConstruct;
 import javax.servlet.http.HttpSession;
 import java.time.LocalDateTime;
 
@@ -26,6 +27,17 @@ public class CalendarController
 
     @Autowired
     EventsRepository events;
+
+    @PostConstruct
+    public void init() throws PasswordStorage.CannotPerformOperationException
+    {
+        if (users.count() == 0)
+        {
+            User user = new User("general", PasswordStorage.createHash("user"));
+            users.save(user);
+        }
+    }
+
 
     @RequestMapping(path = "/", method = RequestMethod.GET)
     public String home(HttpSession session, Model model)
@@ -65,8 +77,8 @@ public class CalendarController
     {
         String username = (String) session.getAttribute("username");
         User user = users.findByName(username);
-        Event newEvent = new Event(description, LocalDateTime.parse(time), user);
-        events.save(newEvent);
+        Event event = new Event(description, LocalDateTime.parse(time), user);
+        events.save(event);
         return "redirect:/";
     }
 
